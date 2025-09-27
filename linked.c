@@ -29,8 +29,9 @@ int dense_to_sparse(double** dense, int m, int n, MatList* M);
 int sparse_copy(MatList* src, MatList* dest);
 int sparse_LU_decompose(MatList* A, MatList* L, MatList* U);
 int sparse_rmzero(MatList* M);
-
-
+int sparse_diag(MatList* M, double* diag);
+int upper_tri(MatList* A, MatList* U);
+int lower_tri(MatList* A, MatList* L);
 
 int main() {
     MatList ML;
@@ -584,7 +585,7 @@ int sparse_rmzero(MatList* M) {
 
 // take the upper triangular part of A as U
 
-int upper_triangular(MatList* A, MatList* U) {
+int upper_tri(MatList* A, MatList* U) {
     if (A->m != A->n) return 0; // LU decomposition requires square sparse
     if (!CreateSparse(U, A->m, A->n)) return 0;
     for (int i = 1; i <= A->m; i++) {
@@ -598,3 +599,32 @@ int upper_triangular(MatList* A, MatList* U) {
     }
     return 1;
 }
+
+int lower_tri(MatList* A, MatList* L) {
+    if (A->m != A->n) return 0; // LU decomposition requires square sparse
+    if (!CreateSparse(L, A->m, A->n)) return 0;
+    for (int i = 1; i <= A->m; i++) {
+        for (int j = 1; j <= A->n; j++) {
+            double a_ij;
+            sparse_get(A, i, j, &a_ij);
+            if (i > j) {
+                addrnode2(L->rhead, L->chead, i, j, a_ij);
+            }
+        }
+        // Set diagonal of L to 1
+        addrnode2(L->rhead, L->chead, i, i, 1.0);
+    }
+    return 1;
+}
+
+int sp_diag(MatList* A, MatList* D) {
+    if (A->m != A->n) return 0; // LU decomposition requires square sparse
+    if (!CreateSparse(D, A->m, A->n)) return 0;
+    for (int i = 1; i <= A->m; i++) {
+        double a_ii;
+        sparse_get(A, i, i, &a_ii);
+        addrnode2(D->rhead, D->chead, i, i, a_ii);
+    }
+    return 1;
+}
+
