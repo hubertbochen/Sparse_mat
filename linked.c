@@ -33,6 +33,7 @@ int sparse_diag(MatList* M, double* diag);
 int upper_tri(MatList* A, MatList* U);
 int lower_tri(MatList* A, MatList* L);
 
+
 int main() {
     MatList ML;
     if (CreateSparse(&ML, 5, 5)) {
