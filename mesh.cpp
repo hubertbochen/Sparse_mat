@@ -1,3 +1,7 @@
+
+
+#include <stdio.h>
+#include "dense.h"
 class Mesh2D
 {
     public:
@@ -11,8 +15,6 @@ class Mesh2D
     int* ylist;// ylist(lin) to find y index
     int* linlist;// linlist(i,j) to find the lin index
     
-    
-    
     struct SpMat stiff;    
     
     void build_list(){// input: pt_type
@@ -24,4 +26,9 @@ class Mesh2D
     
     };
     
+};
+
+int main(){
+    printf("Mesh2D class defined.\n");
+    return 0;
 }
