@@ -25,10 +25,17 @@ int mat_rmzero(SpMat* M);
 int mat_print(SpMat* M);
 int mat_upper_tri(SpMat* A, SpMat* U);
 int mat_lower_tri(SpMat* A, SpMat* L);
+int mat_get(SpMat* M, int row, int col, double* value);
+int mat_set(SpMat* M, int row, int col, double value);
+int mat_to_dense(SpMat* M, double** dense);
+int mat_copy(SpMat* src, SpMat* dest);
 
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
 int main() {
     SpMat M, T;
-    if (CreateSpMat(&M, 3, 3)) {
+     int N = 100;// Matrix size
+    if (CreateSpMat(&M, N, N)) {
         printf("Sparse matrix created successfully.\n");
         printf("Rows: %d, Columns: %d\n", M.m, M.n);
     } else {
@@ -36,10 +43,21 @@ int main() {
     }
    
     //test append
-    int rows[] = {1, 1, 2, 3, 3};
-    int cols[] = {1, 3, 2, 1, 3};
-    double data[] = {5.0, 8.0, 3.0, 6.0, 9.0};
-    if (mat_append(&M, rows, cols, data, 5)) {
+   // order-1 Central Difference Matrix
+   
+    int rows[N*2+1], cols[N*2+1];
+    double data[N*2+1];
+    int idx = 0;
+    for (int i = 1; i <= N; i++) {
+        if (i > 1) { rows[idx] = i; cols[idx] = i-1; data[idx] = -1.0; idx++; } // left neighbor
+        if (i < N) { rows[idx] = i; cols[idx] = i+1; data[idx] = 1.0; idx++; }  // right neighbor
+    }
+    rows[idx] = N; cols[idx] = N; data[idx] = 1.0; idx++;
+    rows[idx] = N; cols[idx] = N-1; data[idx] = 1.0; idx++;
+    rows[idx] = 1; cols[idx] = 1; data[idx] = -1.0; idx++;
+
+
+    if (mat_append(&M, rows, cols, data, idx-1)) {
         printf("Data appended successfully.\n");
     } else {
         printf("Failed to append data.\n");
@@ -60,22 +78,12 @@ int main() {
     }   
     //test addition
 
-    SpMat A, B, C;
-    CreateSpMat(&A, 3, 3);
-    CreateSpMat(&B, 3, 3);
-    int rowsA[] = {1, 2, 3};
-    int colsA[] = {1, 2, 3};
-    double dataA[] = {1.0, 2.0, 3.0};
-    mat_append(&A, rowsA, colsA, dataA, 3);
-    int rowsB[] = {1, 2, 3};
-    int colsB[] = {2, 3, 1};
-    double dataB[] = {4.0, 5.0, 6.0};
-    mat_append(&B, rowsB, colsB, dataB, 3);
-    if (mat_add(&A, &B, &C)) {
-        printf("Matrices added successfully.\n");
+    SpMat A;
+    if (mat_copy(&M, &A)) {
+        printf("Matrices copied successfully.\n");
         printf("Resultant matrix non-zero elements:\n");
-        for (int k = 0; k < C.tu; k++) {
-            printf("Row: %d, Column: %d, Data: %.2f\n", C.elem[k].i, C.elem[k].j, C.elem[k].data);
+        for (int k = 0; k < A.tu; k++) {
+            printf("Row: %d, Column: %d, Data: %.2f\n", A.elem[k].i, A.elem[k].j, A.elem[k].data);
         }
     } else {
         printf("Failed to add matrices.\n");
@@ -101,10 +109,12 @@ int main() {
     } else {
         printf("Failed to multiply matrices.\n");
     }
+
+
     return 0;
 }
 
-
+/////////////////////////////////////////////////////////////////////////////////////////////////
 
 int CreateSpMat(SpMat* M, int m, int n) {
     if (m < 1 || n < 1 || m > MaxNum || n > MaxNum) return 0;
@@ -150,9 +160,6 @@ int mat_append(SpMat* M, int rows[], int cols[], double data[], int count) {
         return 1;
     }
 }
-
-
-
 
 int mat_add(SpMat* A, SpMat* B, SpMat* C) {
     if (A->m != B->m || A->n != B->n) return 0; //维数不同，无法相加
@@ -299,7 +306,6 @@ int mat_transpose(SpMat* M, SpMat* T) {
     }
     return 1;
 }
-
 
 int mat_get(SpMat* M, int row, int col, double* value) {
     if (!M || row < 1 || row > M->m || col < 1 || col > M->n || !value) return 0;
@@ -489,6 +495,7 @@ int mat_LU_decompose(SpMat* A, SpMat* L, SpMat* U) {
     }
     
 int mat_upper_tri(SpMat* A, SpMat* U){
+
     if (!A || !U || A->m != A->n) return 0; // Only square matrices can be processed
     int n = A->m;
     if (!CreateSpMat(U, n, n)) return 0;
@@ -500,6 +507,7 @@ int mat_upper_tri(SpMat* A, SpMat* U){
     }
     return 1;
 };
+
 int mat_lower_tri(SpMat* A, SpMat* L){
     if (!A || !L || A->m != A->n) return 0; // Only square matrices can be processed
     int n = A->m;

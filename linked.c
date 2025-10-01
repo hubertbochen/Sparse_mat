@@ -168,7 +168,6 @@ int CreateSparse(MatList* ML, int m, int n) {
     return 1;
 }
 
-
 // Insert a node into both row and column lists
 int addrnode2(ElLink* rhead, ElLink* chead, int row, int col, double data) {
     // Insert into row list (rnext)
@@ -387,7 +386,6 @@ int sparse_free(MatList* M) {
     M->total = 0;
     return 1;
 }
-
 
 int sparse_print(MatList* M) {
     if (!M) return 0;
