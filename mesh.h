@@ -22,6 +22,8 @@ public:
 	int* linlist;
 	struct SpMat stiff;
      //struct Dense pt_type;// non_exist: 0 , boundary:1 , inner :2
+     Mesh2D();
+	~Mesh2D();
 	void build_list();
 	void build_stiff();
 };

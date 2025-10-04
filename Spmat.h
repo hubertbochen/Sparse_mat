@@ -38,6 +38,7 @@ int mat_get(SpMat* M, int row, int col, double* value);
 int mat_set(SpMat* M, int row, int col, double value);
 int mat_to_dense(SpMat* M, double** dense);
 int mat_copy(SpMat* src, SpMat* dest);
+int mat_LU_solve(SpMat* L, SpMat* U, double* b, double* x);
 
 #ifdef __cplusplus
 }
