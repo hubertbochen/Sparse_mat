@@ -3,18 +3,23 @@
     "tasks": [
         {
             "type": "cppbuild",
-            "label": "C/C++: g++ build active file",
+            "label": "C/C++: Build all files (use main.cpp)",
             "command": "D:\\env\\msys2\\ucrt64\\bin\\g++.exe",
             "args": [
+                "-fopenmp",
+                "-std=c++11",
                 "-static",
                 "-fdiagnostics-color=always",
                 "-g",
-                "${file}",
+                "main.cpp",
+                "data.cpp",
+                "mesh.cpp",
+                "Spmat.c",
                 "-o",
-                "${fileDirname}\\${fileBasenameNoExtension}.exe"
+                "${workspaceFolder}\\data.exe"
             ],
             "options": {
-                "cwd": "${fileDirname}"
+                "cwd": "${workspaceFolder}"
             },
             "problemMatcher": ["$gcc"],
             "group": {

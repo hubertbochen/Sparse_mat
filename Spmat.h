@@ -8,7 +8,7 @@ extern "C" {
 
 #include <stdio.h>
 
-#define MaxNum 1000
+#define MaxNum 1000000
 
 typedef struct triple {
     int i;
@@ -17,7 +17,7 @@ typedef struct triple {
 } triple, *MatHead;
 
 typedef struct SpMat {
-    triple elem[MaxNum];
+    triple* elem; // dynamically allocated array of triples
     int m;
     int n;
     int tu;
@@ -39,7 +39,10 @@ int mat_set(SpMat* M, int row, int col, double value);
 int mat_to_dense(SpMat* M, double** dense);
 int mat_copy(SpMat* src, SpMat* dest);
 int mat_LU_solve(SpMat* L, SpMat* U, double* b, double* x);
-
+int Jacobi(SpMat* A, double* b, double* x, int max_iter, double tol);
+int precompute_row_indexs(SpMat* A, int** row_ptr);
+int Gauss_Seidel(SpMat* A, double* b, double* x, int max_iter, double tol);
+static int compare_triples(const void* a, const void* b);
 #ifdef __cplusplus
 }
 #endif

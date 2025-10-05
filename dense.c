@@ -1,7 +1,7 @@
 // structure of dense matrix
 #include "Spmat.h"
 #include <stdio.h>
-#define MaxNum 1000
+#define MaxNum 10000
 typedef struct {
     int m;          // number of rows
     int n;          // number of columns
