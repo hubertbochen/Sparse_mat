@@ -1,7 +1,7 @@
 #ifndef DATA_H
 #define DATA_H
 
-#include "mesh.h"
+#include "mesh.hpp"
 #include "Spmat.h"
 
 #ifdef __cplusplus

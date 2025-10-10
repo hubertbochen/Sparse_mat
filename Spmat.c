@@ -148,6 +148,10 @@ int mat_add(SpMat* A, SpMat* B, SpMat* C) {
     }
 }
 
+
+
+
+
 int mat_multiply(SpMat* A, SpMat* B, SpMat* C) {
     if (A->n != B->m) return 0; //维数不匹配，无法相乘
     C->m = A->m;
@@ -833,72 +837,4 @@ int Jacobi(SpMat* A, double* b, double* x, int max_iter, double tol) {
     free(x_new);
     return 1;
 }
-/*
 
-int Gauss_Seidel(SpMat* A, double* b, double* x, int max_iter, double tol) {
-    if (!A || !b || !x || A->m != A->n) return 0;
-    int n = A->m;
-
-    double* diag = (double*)malloc(n * sizeof(double));
-    if (!diag) return 0;
-    for (int i = 0; i < n; ++i) diag[i] = 0.0;
-    for (int k = 0; k < A->tu; ++k) {
-        if (A->elem[k].i == A->elem[k].j) {
-            int r = A->elem[k].i - 1;
-            if (r >= 0 && r < n) diag[r] = A->elem[k].data;
-        }
-    }
-
-   
-    int zero_diag_count = 0;
-    const double diag_eps = 1e-16;
-    for (int i = 0; i < n; ++i) {
-        if (diag[i] == 0.0) { diag[i] = diag_eps; ++zero_diag_count; }
-    }
-    if (zero_diag_count) {
-        fprintf(stderr, "Warning: Gauss_Seidel found %d zero diagonal entries; using eps=%g\n",
-                zero_diag_count, diag_eps);
-    }
-
-    int *row_start = NULL;
-    int *row_idx = NULL;
-    double *row_val = NULL;
-    if (!precompute_row_index(A, &row_start, &row_idx, &row_val)) {
-        free(diag);
-        return 0;
-    }
-
-    for (int iter = 0; iter < max_iter; ++iter) {
-        double diff_norm = 0.0;
-
-        #pragma omp parallel reduction(+:diff_norm)
-        {
-            int i_start, i_end;
-            #pragma omp for schedule(static)
-            for (int i = 0; i < n; ++i) {
-            double sum = 0.0;
-            for (int p = row_start[i]; p < row_start[i+1]; ++p) {
-                int j = row_idx[p];
-                if (j == i) continue;
-                
-                sum += row_val[p] * x[j];
-            }
-
-            double x_old = x[i];
-            x[i] = (b[i] - sum) / diag[i];
-            double d = x[i] - x_old;
-            diff_norm += d * d;
-            }
-        }
-
-        diff_norm = sqrt(diff_norm);
-        if (diff_norm < tol) break;
-    }
-
-    free(row_start);
-    free(row_idx);
-    free(row_val);
-    free(diag);
-    return 1;
-}
-*/

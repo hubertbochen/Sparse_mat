@@ -1,4 +1,4 @@
-#include "mesh.h"
+#include "mesh.hpp"
 #include <cstdio>
 #include <cstdlib>
 
@@ -185,5 +185,5 @@ void Mesh2D::build_stiff(Mesh2D* mesh) {
             }
         }
     }
-    std::printf("Stiffness matrix built with %d elements\n", stiff.tu);
+    std::printf("Laplacian matrix built with %d elements\n", stiff.tu);
 }

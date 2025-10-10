@@ -1,4 +1,4 @@
-#include "data.h"
+#include "data.hpp"
 #include <cmath>
 #include <cstdio>
 #include <algorithm> // std::max
@@ -6,20 +6,39 @@
 
 // exact solution and its Laplacian for u = exp(x*y)
 static inline double exact_u(double x, double y) {
-    return std::exp(x*y/4.0) + y;
+    return std::exp(x*y-x) + y;
 }
 static inline double laplacian_exact(double x, double y) {
-    return (x*x + y*y) * std::exp(x*y/4.0) /16.0;
+    return (x*x + (y-1)*(y-1)) * std::exp(x*y-x);
 }
 
 int main() {
+     //record all terminal output to a log file
+     //both output in terminal and saved to file
+     //to disable, comment out the following line
+
+    freopen("output.log", "w", stdout);
+    std::printf("2D Poisson solver on L-shaped domain using FIM and sparse matrix\n");
+    std::printf("C++17, OpenMP %d threads\n", omp_get_max_threads());
+    std::printf("Assemble laplacian matrix and solve using Gauss-Seidel iteration\n");
+    std::printf("Exact solution: u = exp(x*y/4) + y, Laplacian = (x^2 + y^2)*exp(x*y/4)/16\n");
+    std::printf("Domain: L-shape with vertices (0,-2),(0,2),(2,2),(2,1),(1,1),(1,-2)\n");
+    std::printf("Mesh: uniform grid with nx by ny points, spacing hx, hy\n");
+    std::printf("Boundary condition: Dirichlet u=0 on outer boundary\n");
+    std::printf("Inner boundary (the cut-out triangle): u = exact solution\n");
+    std::printf("------------------------------------------------------------\n");
+    // Set up mesh and data
+
+
     // choose k and enforce nx = ny = 4*k + 1
     const int k = 32;               // change k for resolution
     const int nx = 2 * k + 1;
     const int ny = 4 * k + 1;
+
     const double x0 = 0.0, x1 = 2.0;      // x in [0,2]
     const double y0 = -2.0, y1 = 2.0;     // y in [-2,2]
-
+    printf("Mesh size: nx = %d, ny = %d\n", nx, ny);
+    printf("Domain: x in [%.2f, %.2f], y in [%.2f, %.2f]\n", x0, x1, y0, y1);
     Data data;
     data.mesh.init(nx, ny, x1 - x0, y1 - y0);
 
@@ -136,6 +155,7 @@ int main() {
         double y = y0 + jj * hy;
         if (data.mesh.pt_type[ii][jj] == 1) {
             data.sfunc[lin] = exact_u(x,y); // Dirichlet
+        
         } else {
             data.sfunc[lin] = -laplacian_exact(x,y); // Δu
         }
@@ -165,5 +185,32 @@ int main() {
     std::printf("Error: max = %.6e, L2 = %.6e\n", err_max, err_l2);
 
     data.save_solution_to_file("results/solution.txt");
+    // free memory
+
+  
+    
+
+
+
+      // change stdout to terminal 
+    freopen("CON", "w", stdout); // Use "CON" for Windows, "/dev/tty" for Unix
+    std::fflush(stdout);
+    std::printf("All done.\n");
+    //print the file output.log to terminal
+    std::FILE* logFile = std::fopen("output.log", "r");
+    if (logFile) {
+        char buffer[256];
+        while (std::fgets(buffer, sizeof(buffer), logFile)) {
+            std::printf("%s", buffer);
+        }
+        std::fclose(logFile);
+    } else {
+        std::printf("Error: Could not open log file for reading\n");
+    }
+
+   
+
     return 0;
+
+
 }
