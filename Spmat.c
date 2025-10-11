@@ -1,3 +1,13 @@
+/*Sparse Matrix Library
+
+Author: ChenBojin
+Date: 2025-10-03
+Version: 1.2
+Description: A C library for sparse matrix operations, including creation, addition,
+multiplication, transposition, and conversion between sparse and dense formats.
+
+*/
+
 #include "Spmat.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,10 +17,15 @@
 #include <omp.h>
 #endif
 
-
-
-
 int CreateSpMat(SpMat* M, int m, int n) {
+    /*Initialize a sparse matrix with given dimensions
+    Input:
+        M: pointer to the sparse matrix structure to be initialized
+        m: number of rows
+        n: number of columns
+    Output:
+        Returns 1 on success, 0 on failure (invalid dimensions or memory allocation failure)
+    */
     if (m < 1 || n < 1 || m > MaxNum || n > MaxNum) return 0;
     M->m = m;
     M->n = n;
@@ -21,6 +36,16 @@ int CreateSpMat(SpMat* M, int m, int n) {
 }
 
 int mat_append(SpMat* M, int rows[], int cols[], double data[], int count) {
+    /*Append non-zero elements to the sparse matrix
+    Input:
+        M: pointer to the sparse matrix structure
+        rows: array of row indices (1-based)
+        cols: array of column indices (1-based)
+        data: array of non-zero values
+        count: number of elements to append
+    Output:
+        Returns 1 on success, 0 on failure (invalid indices or exceeding storage capacity)
+    */
     if (!M || !rows || !cols || !data || count < 1) return 0;
     int success = 1;
     if (count > 1000) {
@@ -58,6 +83,14 @@ int mat_append(SpMat* M, int rows[], int cols[], double data[], int count) {
 }
 
 int mat_add(SpMat* A, SpMat* B, SpMat* C) {
+    /*Add two sparse matrices A and B, store the result in C
+    Input:
+        A: pointer to the first sparse matrix
+        B: pointer to the second sparse matrix
+        C: pointer to the result sparse matrix
+    Output:
+        Returns 1 on success, 0 on failure (dimension mismatch or exceeding storage capacity)
+    */
     if (A->m != B->m || A->n != B->n) return 0;
     C->m = A->m;
     C->n = A->n;
@@ -148,12 +181,16 @@ int mat_add(SpMat* A, SpMat* B, SpMat* C) {
     }
 }
 
-
-
-
-
 int mat_multiply(SpMat* A, SpMat* B, SpMat* C) {
-    if (A->n != B->m) return 0; //维数不匹配，无法相乘
+    /*Multiply two sparse matrices A and B, store the result in C
+    Input:
+        A: pointer to the first sparse matrix
+        B: pointer to the second sparse matrix
+        C: pointer to the result sparse matrix
+    Output:
+        Returns 1 on success, 0 on failure (dimension mismatch or exceeding storage capacity)
+    */  
+    if (A->n != B->m) return 0; // Dimension mismatch
     C->m = A->m;
     C->n = B->n;
     C->tu = 0;
@@ -254,9 +291,14 @@ int mat_multiply(SpMat* A, SpMat* B, SpMat* C) {
     }
 }
 
-//稀疏矩阵的转置
 int mat_transpose(SpMat* M, SpMat* T) {
-    //1.稀疏矩阵的行数和列数互换
+    /*Transpose a sparse matrix M, store the result in T
+    Input:
+        M: pointer to the sparse matrix to be transposed
+        T: pointer to the result sparse matrix
+    Output:
+        Returns 1 on success, 0 on failure (memory allocation failure)
+    */
     (*T).m = M->n;
     (*T).n = M->m;
     (*T).tu = M->tu;
@@ -264,16 +306,16 @@ int mat_transpose(SpMat* M, SpMat* T) {
     if ((*T).tu) {
         int col, p;
         int q = 0;
-        //2.遍历原表中的各个三元组
+  
         for (col = 1; col <= M->n; col++) {
-            //重复遍历原表 M.m 次，将所有三元组都存放到新表中
+       
             for (p = 0; p < M->tu; p++) {
-                //3.每次遍历，找到 j 列值最小的三元组，将它的行、列互换后存储到新表中
+           
                 if (M->elem[p].j == col) {
                     (*T).elem[q].i = M->elem[p].j;
                     (*T).elem[q].j = M->elem[p].i;
                     (*T).elem[q].data = M->elem[p].data;
-                    //为存放下一个三元组做准备
+           
                     q++;
                 }
             }
@@ -283,6 +325,15 @@ int mat_transpose(SpMat* M, SpMat* T) {
 }
 
 int mat_get(SpMat* M, int row, int col, double* value) {
+    /*Get the value at specified row and column in the sparse matrix
+    Input:
+        M: pointer to the sparse matrix
+        row: row index (1-based)
+        col: column index (1-based)
+        value: pointer to store the retrieved value
+    Output:
+        Returns 1 on success, 0 on failure (invalid indices or null pointer)
+    */
     if (!M || row < 1 || row > M->m || col < 1 || col > M->n || !value) return 0;
     for (int k = 0; k < M->tu; k++) {
         if (M->elem[k].i == row && M->elem[k].j == col) {
@@ -295,6 +346,15 @@ int mat_get(SpMat* M, int row, int col, double* value) {
 }
 
 int mat_set(SpMat* M, int row, int col, double value) {
+    /*Set the value at specified row and column in the sparse matrix
+    Input:
+        M: pointer to the sparse matrix
+        row: row index (1-based)
+        col: column index (1-based)
+        value: value to set
+    Output:
+        Returns 1 on success, 0 on failure (invalid indices or exceeding storage capacity)
+    */
     if (!M || row < 1 || row > M->m || col < 1 || col > M->n) return 0;
     for (int k = 0; k < M->tu; k++) {
         if (M->elem[k].i == row && M->elem[k].j == col) {
@@ -321,6 +381,13 @@ int mat_set(SpMat* M, int row, int col, double value) {
 }
 
 int mat_to_dense(SpMat* M, double** dense) {
+    /*Convert a sparse matrix to a dense matrix
+    Input:
+        M: pointer to the sparse matrix
+        dense: 2D array to store the dense matrix (should be pre-allocated with size M->m x M->n)
+    Output:
+        Returns 1 on success, 0 on failure (null pointers)  
+    */
     if (!M || !dense) return 0;
     for (int i = 0; i < M->m; i++) {
         for (int j = 0; j < M->n; j++) {
@@ -353,6 +420,12 @@ int dense_to_mat(double** dense, int m, int n, SpMat* M) {
 }
 
 int mat_rmzero(SpMat* M) {
+    /*remove zero elements from the sparse matrix
+    Input:
+        M: pointer to the sparse matrix
+    Output:
+        Returns 1 on success, 0 on failure (null pointer)
+    */
     if (!M) return 0;
     int new_tu = 0;
     for (int k = 0; k < M->tu; k++) {
@@ -368,6 +441,13 @@ int mat_rmzero(SpMat* M) {
 }
 
 int mat_copy(SpMat* src, SpMat* dest) {
+    /*copy a sparse matrix from src to dest
+    Input:
+        src: pointer to the source sparse matrix
+        dest: pointer to the destination sparse matrix
+    Output:
+        Returns 1 on success, 0 on failure (null pointers or memory allocation failure)
+    */
     if (!src || !dest) return 0;
     if (!CreateSpMat(dest, src->m, src->n)) return 0;
     for (int k = 0; k < src->tu; k++) {
@@ -379,6 +459,12 @@ int mat_copy(SpMat* src, SpMat* dest) {
 }
 
 int mat_print(SpMat* M) {
+    /*print the sparse matrix to standard output
+    Input:
+        M: pointer to the sparse matrix
+    Output:
+        Returns 1 on success, 0 on failure (null pointer)
+    */
     if (!M) return 0;
     printf("Sparse Matrix (%d x %d) with %d non-zero elements:\n", M->m, M->n, M->tu);
     for (int k = 0; k < M->tu; k++) {
@@ -388,6 +474,14 @@ int mat_print(SpMat* M) {
 }
 
 int mat_LU_decompose(SpMat* A, SpMat* L, SpMat* U) {
+    /*decompose a square sparse matrix A into lower triangular matrix L and upper triangular matrix U using LU decomposition
+    Input:
+        A: pointer to the square sparse matrix to be decomposed
+        L: pointer to the resulting lower triangular sparse matrix
+        U: pointer to the resulting upper triangular sparse matrix
+    Output:
+        Returns 1 on success, 0 on failure (non-square matrix or memory allocation failure)
+    */
     if (!A || !L || !U || A->m != A->n) return 0; // Only square matrices can be decomposed
     int n = A->m;
     if (!CreateSpMat(L, n, n) || !CreateSpMat(U, n, n)) return 0;

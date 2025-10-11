@@ -1,3 +1,18 @@
+/*Class Data declaration and methods for managing mesh and solving Poisson equation
+variables:
+    mesh: Mesh2D object representing the computational mesh
+    sfunc: array representing the source function (right-hand side)
+    solution: array representing the solution vector
+methods:
+    init: initialize the Data object with mesh dimensions and allocate arrays
+    set_boundary_conditions: set boundary conditions and source function values
+    Solve_Poisson: solve the Poisson equation using Gauss-Seidel method
+    print_solution: print the solution array to standard output
+    save_solution_to_file: save the solution array to a text file
+    get_solution_at: get the solution value at a specific (i,j) grid point
+
+*/
+
 #ifndef DATA_H
 #define DATA_H
 

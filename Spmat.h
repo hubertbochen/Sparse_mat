@@ -43,6 +43,7 @@ int Jacobi(SpMat* A, double* b, double* x, int max_iter, double tol);
 int precompute_row_indexs(SpMat* A, int** row_ptr);
 int Gauss_Seidel(SpMat* A, double* b, double* x, int max_iter, double tol);
 static int compare_triples(const void* a, const void* b);
+
 #ifdef __cplusplus
 }
 #endif
