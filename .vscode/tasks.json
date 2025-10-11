@@ -12,9 +12,9 @@
                 "-fdiagnostics-color=always",
                 "-g",
                 "main.cpp",
-                "data.cpp",
-                "mesh.cpp",
-                "Spmat.c",
+                "source\\data.cpp",
+                "source\\mesh.cpp",
+                "source\\Spmat.c",
                 "-o",
                 "${workspaceFolder}\\data.exe"
             ],

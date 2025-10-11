@@ -1,4 +1,4 @@
-#include "mesh.hpp"
+#include "..\lib\mesh.hpp"
 #include <cstdio>
 #include <cstdlib>
 

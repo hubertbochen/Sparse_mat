@@ -8,7 +8,7 @@ multiplication, transposition, and conversion between sparse and dense formats.
 
 */
 
-#include "Spmat.h"
+#include "..\lib\Spmat.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

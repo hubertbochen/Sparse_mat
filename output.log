@@ -7,12 +7,12 @@ Mesh: uniform grid with nx by ny points, spacing hx, hy
 Boundary condition: Dirichlet u=0 on outer boundary
 Inner boundary (the cut-out triangle): u = exact solution
 ------------------------------------------------------------
-Mesh size: nx = 65, ny = 129
+Mesh size: nx = 129, ny = 257
 Domain: x in [0.00, 2.00], y in [-2.00, 2.00]
-Laplacian matrix built with 27733 elements
-Solving with Gauss-Seidel: n=5777, max_iter=100000, tol=1e-10
-Gauss-Seidel converged in 8069 iterations
-Gauss-Seidel finished, residual norm = 2.045784e-07
-Calculation time: 0.903000 seconds
-Error: max = 1.055340e-04, L2 = 3.589173e-05
+Laplacian matrix built with 111781 elements
+Solving with Gauss-Seidel: n=22817, max_iter=100000, tol=1e-10
+Gauss-Seidel converged in 31194 iterations
+Gauss-Seidel finished, residual norm = 8.188605e-07
+Calculation time: 14.002000 seconds
+Error: max = 2.641860e-05, L2 = 8.987796e-06
 Solution saved to results/solution.txt

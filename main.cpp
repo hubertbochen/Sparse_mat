@@ -1,4 +1,4 @@
-#include "data.hpp"
+#include "lib\data.hpp"
 #include <cmath>
 #include <cstdio>
 #include <algorithm> // std::max
@@ -31,7 +31,7 @@ int main() {
 
 
     // choose k and enforce nx = ny = 4*k + 1
-    const int k = 32;               // change k for resolution
+    const int k = 64;               // change k for resolution
     const int nx = 2 * k + 1;
     const int ny = 4 * k + 1;
 

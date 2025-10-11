@@ -1,4 +1,4 @@
-#include "data.hpp"
+#include "..\lib\data.hpp"
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
