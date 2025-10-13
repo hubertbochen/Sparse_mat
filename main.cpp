@@ -1,10 +1,22 @@
-#include "lib\data.hpp"
+/**
+ * @file main.cpp
+ * @author Chen Bojin
+ * @brief Main program to solve 2D Poisson equation on an L-shaped domain using FDM and sparse matrix
+ * @version 1.0
+ * @date 2025-10-13
+ * 
+ * @note Uses C++17 standard
+ * @note Depends on data.hpp, mesh.hpp, Spmat.h
+ * 
+ */ 
+
+#include "lib/data.hpp"
 #include <cmath>
 #include <cstdio>
 #include <algorithm> // std::max
 #include <omp.h>     // OpenMP for omp_get_wtime
 
-// exact solution and its Laplacian for u = exp(x*y)
+
 static inline double exact_u(double x, double y) {
     return std::exp(x*y-x) + y;
 }
@@ -21,7 +33,7 @@ int main() {
     std::printf("2D Poisson solver on L-shaped domain using FIM and sparse matrix\n");
     std::printf("C++17, OpenMP %d threads\n", omp_get_max_threads());
     std::printf("Assemble laplacian matrix and solve using Gauss-Seidel iteration\n");
-    std::printf("Exact solution: u = exp(x*y/4) + y, Laplacian = (x^2 + y^2)*exp(x*y/4)/16\n");
+    std::printf("Exact solution: u = exp(x*y-x) + y, Laplacian = (x^2 + (y-1)^2)*exp(x*y-x)\n");
     std::printf("Domain: L-shape with vertices (0,-2),(0,2),(2,2),(2,1),(1,1),(1,-2)\n");
     std::printf("Mesh: uniform grid with nx by ny points, spacing hx, hy\n");
     std::printf("Boundary condition: Dirichlet u=0 on outer boundary\n");
@@ -189,7 +201,7 @@ int main() {
 
   
     
-
+    //////////////////////////////////////////////////////////////////////////////////////////
 
 
       // change stdout to terminal 
@@ -208,8 +220,99 @@ int main() {
         std::printf("Error: Could not open log file for reading\n");
     }
 
-   
+    
+    
+    // construct some other examples of ordinary boundary conditions, which means no triangle cut-out
+    std::printf("\nRunning naive rectangle Dirichlet example...\n");
 
+    {
+        // reuse same domain and k-derived resolution (full rectangle, no holes)
+        const int nx2 = 2 * k + 1;
+        const int ny2 = 4 * k + 1;
+
+        Data data2;
+        data2.mesh.init(nx2, ny2, x1 - x0, y1 - y0);
+
+        // allocate and set pt_type: 1 = boundary, 3 = inner
+        data2.mesh.pt_type = new int*[nx2];
+        for (int i = 0; i < nx2; ++i) {
+            data2.mesh.pt_type[i] = new int[ny2];
+            for (int j = 0; j < ny2; ++j) {
+                data2.mesh.pt_type[i][j] = (i == 0 || j == 0 || i == nx2 - 1 || j == ny2 - 1) ? 1 : 3;
+            }
+        }
+
+        const double hx2 = data2.mesh.hx;
+        const double hy2 = data2.mesh.hy;
+
+        data2.mesh.build_list(&data2.mesh);
+        data2.mesh.build_stiff(&data2.mesh);
+
+        const int n2 = data2.mesh.allocated_size;
+        data2.sfunc = new double[n2];
+        data2.solution = new double[n2];
+        for (int t = 0; t < n2; ++t) { data2.sfunc[t] = 0.0; data2.solution[t] = 0.0; }
+
+        // RHS: keep sign consistent with current solver usage in this file (-laplacian for interior)
+        for (int lin = 0; lin < n2; ++lin) {
+            int ii = data2.mesh.xlist[lin];
+            int jj = data2.mesh.ylist[lin];
+            double x = x0 + ii * hx2;
+            double y = y0 + jj * hy2;
+            if (data2.mesh.pt_type[ii][jj] == 1)
+                data2.sfunc[lin] = exact_u(x, y);   // Dirichlet boundary value
+            else
+                data2.sfunc[lin] = -laplacian_exact(x, y);
+        }
+
+        double t0 = omp_get_wtime();
+        data2.Solve_Poisson();
+        double t1 = omp_get_wtime();
+        std::printf("Naive rectangle solve time: %.6f seconds\n", t1 - t0);
+
+        // error report
+        double err_max2 = 0.0, err_l22 = 0.0;
+        for (int lin = 0; lin < n2; ++lin) {
+            int ii = data2.mesh.xlist[lin];
+            int jj = data2.mesh.ylist[lin];
+            double x = x0 + ii * hx2;
+            double y = y0 + jj * hy2;
+            double e = data2.solution[lin] - exact_u(x, y);
+            err_max2 = std::max(err_max2, std::fabs(e));
+            err_l22 += e * e;
+        }
+        err_l22 = std::sqrt(err_l22 / std::max(1, n2));
+        std::printf("Naive rectangle error: max = %.6e, L2 = %.6e\n", err_max2, err_l22);
+
+        // save naive outputs
+        FILE* fsol = std::fopen("results/naive_solution.txt", "w");
+        FILE* frhs = std::fopen("results/naive_rhs.txt", "w");
+        if (fsol) {
+            for (int lin = 0; lin < n2; ++lin) {
+                int ii = data2.mesh.xlist[lin];
+                int jj = data2.mesh.ylist[lin];
+                double x = x0 + ii * hx2;
+                double y = y0 + jj * hy2;
+                std::fprintf(fsol, "%.15g %.15g %.15g\n", x, y, data2.solution[lin]);
+            }
+            std::fclose(fsol);
+        } else {
+            std::printf("Warning: cannot open results/naive_solution.txt\n");
+        }
+        if (frhs) {
+            for (int lin = 0; lin < n2; ++lin) {
+                int ii = data2.mesh.xlist[lin];
+                int jj = data2.mesh.ylist[lin];
+                double x = x0 + ii * hx2;
+                double y = y0 + jj * hy2;
+                std::fprintf(frhs, "%.15g %.15g %.15g\n", x, y, data2.sfunc[lin]);
+            }
+            std::fclose(frhs);
+        } else {
+            std::printf("Warning: cannot open results/naive_rhs.txt\n");
+        }
+    }
+    
     return 0;
 
 

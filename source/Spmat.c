@@ -1,12 +1,16 @@
-/*Sparse Matrix Library
+/**
+ * @brief   Sparse Matrix Library
+ * @author  Chen Bojin
+ * @headerfile lib/Spmat.h
+ * @version 1.0
+ * @date    2025-10-13
+ * @note    This library provides basic operations for sparse matrices, including creation, addition,
+ *          multiplication, transposition, and conversion between sparse and dense formats.
+ *         The sparse matrix is represented using a list of triples (row, column, value).
+ *         The library is optimized for performance and can handle large sparse matrices efficiently.
+ *         Parallel processing using OpenMP is employed for large matrix operations to enhance performance.
+ */
 
-Author: ChenBojin
-Date: 2025-10-03
-Version: 1.2
-Description: A C library for sparse matrix operations, including creation, addition,
-multiplication, transposition, and conversion between sparse and dense formats.
-
-*/
 
 #include "..\lib\Spmat.h"
 #include <stdio.h>
@@ -18,14 +22,17 @@ multiplication, transposition, and conversion between sparse and dense formats.
 #endif
 
 int CreateSpMat(SpMat* M, int m, int n) {
-    /*Initialize a sparse matrix with given dimensions
-    Input:
+    /**
+     * @brief Initialize a sparse matrix with given dimensions
+     *  Input:
         M: pointer to the sparse matrix structure to be initialized
         m: number of rows
         n: number of columns
-    Output:
+        Output:
         Returns 1 on success, 0 on failure (invalid dimensions or memory allocation failure)
     */
+   
+    if (!M) return 0;
     if (m < 1 || n < 1 || m > MaxNum || n > MaxNum) return 0;
     M->m = m;
     M->n = n;
@@ -36,16 +43,18 @@ int CreateSpMat(SpMat* M, int m, int n) {
 }
 
 int mat_append(SpMat* M, int rows[], int cols[], double data[], int count) {
-    /*Append non-zero elements to the sparse matrix
-    Input:
-        M: pointer to the sparse matrix structure
+    /**
+     * @brief Append non-zero elements to the sparse matrix
+     * Input:
+        M: pointer to the sparse matrix
         rows: array of row indices (1-based)
         cols: array of column indices (1-based)
-        data: array of non-zero values
+        data: array of corresponding non-zero values
         count: number of elements to append
-    Output:
+        Output:
         Returns 1 on success, 0 on failure (invalid indices or exceeding storage capacity)
-    */
+     */
+    
     if (!M || !rows || !cols || !data || count < 1) return 0;
     int success = 1;
     if (count > 1000) {
@@ -83,14 +92,18 @@ int mat_append(SpMat* M, int rows[], int cols[], double data[], int count) {
 }
 
 int mat_add(SpMat* A, SpMat* B, SpMat* C) {
-    /*Add two sparse matrices A and B, store the result in C
-    Input:
-        A: pointer to the first sparse matrix
-        B: pointer to the second sparse matrix
-        C: pointer to the result sparse matrix
-    Output:
-        Returns 1 on success, 0 on failure (dimension mismatch or exceeding storage capacity)
-    */
+    /**
+     * @brief Add two sparse matrices A and B, store the result in C
+     * Input:
+     *     A: pointer to the first sparse matrix
+     *     B: pointer to the second sparse matrix
+     *     C: pointer to the result sparse matrix
+     * Output:
+     *     Returns 1 on success, 0 on failure (dimension mismatch or exceeding storage capacity)
+     */
+    if (!A || !B || !C) return 0;
+   
+   
     if (A->m != B->m || A->n != B->n) return 0;
     C->m = A->m;
     C->n = A->n;
@@ -154,7 +167,7 @@ int mat_add(SpMat* A, SpMat* B, SpMat* C) {
         }
         return 1;
     } else {
-        // Keep your existing serial implementation
+        // Keep existing serial implementation
         int i = 0, j = 0, k = 0;
         while (i < A->tu && j < B->tu) {
             if (A->elem[i].i < B->elem[j].i || (A->elem[i].i == B->elem[j].i && A->elem[i].j < B->elem[j].j)) {
@@ -182,14 +195,18 @@ int mat_add(SpMat* A, SpMat* B, SpMat* C) {
 }
 
 int mat_multiply(SpMat* A, SpMat* B, SpMat* C) {
-    /*Multiply two sparse matrices A and B, store the result in C
-    Input:
+    /**
+     * @brief Multiply two sparse matrices A and B, store the result in C
+     * Input:
         A: pointer to the first sparse matrix
         B: pointer to the second sparse matrix
         C: pointer to the result sparse matrix
-    Output:
+        Output:
         Returns 1 on success, 0 on failure (dimension mismatch or exceeding storage capacity)
-    */  
+     * 
+     */
+    
+    if (!A || !B || !C) return 0;
     if (A->n != B->m) return 0; // Dimension mismatch
     C->m = A->m;
     C->n = B->n;
@@ -292,13 +309,16 @@ int mat_multiply(SpMat* A, SpMat* B, SpMat* C) {
 }
 
 int mat_transpose(SpMat* M, SpMat* T) {
-    /*Transpose a sparse matrix M, store the result in T
-    Input:
+    /**
+     * @brief Transpose a sparse matrix M, store the result in T
+     * Input:
         M: pointer to the sparse matrix to be transposed
         T: pointer to the result sparse matrix
-    Output:
+        Output:
         Returns 1 on success, 0 on failure (memory allocation failure)
-    */
+     */
+    
+   
     (*T).m = M->n;
     (*T).n = M->m;
     (*T).tu = M->tu;
@@ -325,15 +345,18 @@ int mat_transpose(SpMat* M, SpMat* T) {
 }
 
 int mat_get(SpMat* M, int row, int col, double* value) {
-    /*Get the value at specified row and column in the sparse matrix
-    Input:
+    /**
+     * @brief Get the value at specified row and column in the sparse matrix
+     * Input:
         M: pointer to the sparse matrix
         row: row index (1-based)
         col: column index (1-based)
         value: pointer to store the retrieved value
-    Output:
+        Output:
         Returns 1 on success, 0 on failure (invalid indices or null pointer)
-    */
+     * 
+     */
+    
     if (!M || row < 1 || row > M->m || col < 1 || col > M->n || !value) return 0;
     for (int k = 0; k < M->tu; k++) {
         if (M->elem[k].i == row && M->elem[k].j == col) {
@@ -346,15 +369,18 @@ int mat_get(SpMat* M, int row, int col, double* value) {
 }
 
 int mat_set(SpMat* M, int row, int col, double value) {
-    /*Set the value at specified row and column in the sparse matrix
-    Input:
+    /**
+     * @brief Set the value at specified row and column in the sparse matrix
+     * Input:
         M: pointer to the sparse matrix
         row: row index (1-based)
         col: column index (1-based)
         value: value to set
-    Output:
-        Returns 1 on success, 0 on failure (invalid indices or exceeding storage capacity)
-    */
+        Output:
+        Returns 1 on success, 0 on failure (invalid indices or null pointer)
+     * 
+     */
+    
     if (!M || row < 1 || row > M->m || col < 1 || col > M->n) return 0;
     for (int k = 0; k < M->tu; k++) {
         if (M->elem[k].i == row && M->elem[k].j == col) {
@@ -381,13 +407,16 @@ int mat_set(SpMat* M, int row, int col, double value) {
 }
 
 int mat_to_dense(SpMat* M, double** dense) {
-    /*Convert a sparse matrix to a dense matrix
-    Input:
+    /**
+     * @brief Convert a sparse matrix to a dense matrix format
+     * Input:
         M: pointer to the sparse matrix
         dense: 2D array to store the dense matrix (should be pre-allocated with size M->m x M->n)
-    Output:
-        Returns 1 on success, 0 on failure (null pointers)  
-    */
+        Output:
+        Returns 1 on success, 0 on failure (null pointers)
+     * 
+     */
+    
     if (!M || !dense) return 0;
     for (int i = 0; i < M->m; i++) {
         for (int j = 0; j < M->n; j++) {
@@ -420,12 +449,14 @@ int dense_to_mat(double** dense, int m, int n, SpMat* M) {
 }
 
 int mat_rmzero(SpMat* M) {
-    /*remove zero elements from the sparse matrix
-    Input:
+    /**
+     * @brief Remove zero elements from the sparse matrix
+     * Input:
         M: pointer to the sparse matrix
-    Output:
+        Output:
         Returns 1 on success, 0 on failure (null pointer)
-    */
+     */
+   
     if (!M) return 0;
     int new_tu = 0;
     for (int k = 0; k < M->tu; k++) {
@@ -441,13 +472,16 @@ int mat_rmzero(SpMat* M) {
 }
 
 int mat_copy(SpMat* src, SpMat* dest) {
-    /*copy a sparse matrix from src to dest
-    Input:
+    /**
+     * @brief Copy a sparse matrix from src to dest
+     * Input:
         src: pointer to the source sparse matrix
         dest: pointer to the destination sparse matrix
-    Output:
+        Output:
         Returns 1 on success, 0 on failure (null pointers or memory allocation failure)
-    */
+     * 
+     */
+   
     if (!src || !dest) return 0;
     if (!CreateSpMat(dest, src->m, src->n)) return 0;
     for (int k = 0; k < src->tu; k++) {
@@ -459,12 +493,14 @@ int mat_copy(SpMat* src, SpMat* dest) {
 }
 
 int mat_print(SpMat* M) {
-    /*print the sparse matrix to standard output
-    Input:
+    /**
+     * @brief Print the sparse matrix to standard output
+     *  Input:
         M: pointer to the sparse matrix
-    Output:
+        Output:
         Returns 1 on success, 0 on failure (null pointer)
-    */
+     */
+    
     if (!M) return 0;
     printf("Sparse Matrix (%d x %d) with %d non-zero elements:\n", M->m, M->n, M->tu);
     for (int k = 0; k < M->tu; k++) {
@@ -473,230 +509,18 @@ int mat_print(SpMat* M) {
     return 1;
 }
 
-int mat_LU_decompose(SpMat* A, SpMat* L, SpMat* U) {
-    /*decompose a square sparse matrix A into lower triangular matrix L and upper triangular matrix U using LU decomposition
-    Input:
-        A: pointer to the square sparse matrix to be decomposed
-        L: pointer to the resulting lower triangular sparse matrix
-        U: pointer to the resulting upper triangular sparse matrix
-    Output:
-        Returns 1 on success, 0 on failure (non-square matrix or memory allocation failure)
-    */
-    if (!A || !L || !U || A->m != A->n) return 0; // Only square matrices can be decomposed
-    int n = A->m;
-    if (!CreateSpMat(L, n, n) || !CreateSpMat(U, n, n)) return 0;
 
-    // Parallel LU decomposition for larger matrices
-    if (n > 50) {
-        for (int i = 1; i <= n; i++) {
-            // Upper triangular part - parallelize within each row
-            #pragma omp parallel for schedule(dynamic) if(n-i > 10)
-            for (int j = i; j <= n; j++) {
-                double sum = 0.0;
-                for (int k = 1; k < i; k++) {
-                    double l_ik = 0, u_kj = 0;
-                    
-                    // Find L[i,k]
-                    for (int p = 0; p < L->tu; p++) {
-                        if (L->elem[p].i == i && L->elem[p].j == k) {
-                            l_ik = L->elem[p].data;
-                            break;
-                        }
-                    }
-                    
-                    // Find U[k,j]
-                    for (int q = 0; q < U->tu; q++) {
-                        if (U->elem[q].i == k && U->elem[q].j == j) {
-                            u_kj = U->elem[q].data;
-                            break;
-                        }
-                    }
-                    sum += l_ik * u_kj;
-                }
-                
-                double a_ij = 0;
-                for (int p = 0; p < A->tu; p++) {
-                    if (A->elem[p].i == i && A->elem[p].j == j) {
-                        a_ij = A->elem[p].data;
-                        break;
-                    }
-                }
-                
-                double u_ij = a_ij - sum;
-                if (u_ij != 0) {
-                    #pragma omp critical
-                    {
-                        if (U->tu < MaxNum) {
-                            U->elem[U->tu].i = i;
-                            U->elem[U->tu].j = j;
-                            U->elem[U->tu].data = u_ij;
-                            U->tu++;
-                        }
-                    }
-                }
-            }
-
-            // Lower triangular part
-            #pragma omp parallel for schedule(dynamic) if(n-i > 10)
-            for (int j = i + 1; j <= n; j++) {
-                double sum = 0.0;
-                for (int k = 1; k < i; k++) {
-                    double l_jk = 0, u_ki = 0;
-                    
-                    for (int p = 0; p < L->tu; p++) {
-                        if (L->elem[p].i == j && L->elem[p].j == k) {
-                            l_jk = L->elem[p].data;
-                            break;
-                        }
-                    }
-                    
-                    for (int q = 0; q < U->tu; q++) {
-                        if (U->elem[q].i == k && U->elem[q].j == i) {
-                            u_ki = U->elem[q].data;
-                            break;
-                        }
-                    }
-                    sum += l_jk * u_ki;
-                }
-                
-                double a_ji = 0;
-                for (int p = 0; p < A->tu; p++) {
-                    if (A->elem[p].i == j && A->elem[p].j == i) {
-                        a_ji = A->elem[p].data;
-                        break;
-                    }
-                }
-                
-                // Find U(i,i)
-                double u_ii = 0;
-                for (int q = 0; q < U->tu; q++) {
-                    if (U->elem[q].i == i && U->elem[q].j == i) {
-                        u_ii = U->elem[q].data;
-                        break;
-                    }
-                }
-                
-                if (u_ii != 0) {
-                    double l_ji = (a_ji - sum) / u_ii;
-                    if (l_ji != 0) {
-                        #pragma omp critical
-                        {
-                            if (L->tu < MaxNum) {
-                                L->elem[L->tu].i = j;
-                                L->elem[L->tu].j = i;
-                                L->elem[L->tu].data = l_ji;
-                                L->tu++;
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Set diagonal of L to 1
-            if (L->tu < MaxNum) {
-                L->elem[L->tu].i = i;
-                L->elem[L->tu].j = i;
-                L->elem[L->tu].data = 1.0;
-                L->tu++;
-            }
-        }
-    } else {
-        // Keep your existing serial implementation for small matrices
-        for (int i = 1; i <= n; i++) {
-            // Upper Triangular
-            for (int j = i; j <= n; j++) {
-                double sum = 0.0;
-                for (int k = 1; k < i; k++) {
-                    double l_ik = 0, u_kj = 0;
-                    for (int p = 0; p < L->tu; p++) {
-                        if (L->elem[p].i == i && L->elem[p].j == k) {
-                            l_ik = L->elem[p].data;
-                            break;
-                        }
-                    }
-                    for (int q = 0; q < U->tu; q++) {
-                        if (U->elem[q].i == k && U->elem[q].j == j) {
-                            u_kj = U->elem[q].data;
-                            break;
-                        }
-                    }
-                    sum += l_ik * u_kj;
-                }
-                double a_ij = 0;
-                for (int p = 0; p < A->tu; p++) {
-                    if (A->elem[p].i == i && A->elem[p].j == j) {
-                        a_ij = A->elem[p].data;
-                        break;
-                    }
-                }
-                double u_ij = a_ij - sum;
-                if (u_ij != 0) {
-                    if (U->tu >= MaxNum) return 0;
-                    U->elem[U->tu].i = i;
-                    U->elem[U->tu].j = j;
-                    U->elem[U->tu].data = u_ij;
-                    U->tu++;
-                }
-            }
-
-            // Lower Triangular
-            for (int j = i + 1; j <= n; j++) {
-                double sum = 0.0;
-                for (int k = 1; k < i; k++) {
-                    double l_jk = 0, u_ki = 0;
-                    for (int p = 0; p < L->tu; p++) {
-                        if (L->elem[p].i == j && L->elem[p].j == k) {
-                            l_jk = L->elem[p].data;
-                            break;
-                        }
-                    }
-                    for (int q = 0; q < U->tu; q++) {
-                        if (U->elem[q].i == k && U->elem[q].j == i) {
-                            u_ki = U->elem[q].data;
-                            break;
-                        }
-                    }
-                    sum += l_jk * u_ki;
-                }
-                double a_ji = 0;
-                for (int p = 0; p < A->tu; p++) {
-                    if (A->elem[p].i == j && A->elem[p].j == i) {
-                        a_ji = A->elem[p].data;
-                        break;
-                    }
-                }
-                double u_ii = 0;
-                for (int q = 0; q < U->tu; q++) {
-                    if (U->elem[q].i == i && U->elem[q].j == i) {
-                        u_ii = U->elem[q].data;
-                        break;
-                    }
-                }
-                if (u_ii == 0) return 0;
-                double l_ji = (a_ji - sum) / u_ii;
-                if (l_ji != 0) {
-                    if (L->tu >= MaxNum) return 0;
-                    L->elem[L->tu].i = j;
-                    L->elem[L->tu].j = i;
-                    L->elem[L->tu].data = l_ji;
-                    L->tu++;
-                }
-            }
-            // Set diagonal of L to 1
-            if (L->tu >= MaxNum) return 0;
-            L->elem[L->tu].i = i;
-            L->elem[L->tu].j = i;
-            L->elem[L->tu].data = 1.0;
-            L->tu++;
-        }
-    }
-    
-    mat_rmzero(L);
-    mat_rmzero(U);
-    return 1; // Decomposition successful
-}
 
 int mat_upper_tri(SpMat* A, SpMat* U){
+    /**
+     * @brief   Extract the upper triangular part of a sparse matrix A, store in U
+     * Input:
+        A: pointer to the input sparse matrix
+        U: pointer to the output sparse matrix (upper triangular part)
+        Output:
+        Returns 1 on success, 0 on failure (null pointers or dimension mismatch)
+     * 
+     */
     if (!A || !U || A->m != A->n) return 0; // Only square matrices can be processed
     int n = A->m;
     if (!CreateSpMat(U, n, n)) return 0;
@@ -709,6 +533,15 @@ int mat_upper_tri(SpMat* A, SpMat* U){
 }
 
 int mat_lower_tri(SpMat* A, SpMat* L){
+    /**
+     * @brief   Extract the lower triangular part of a sparse matrix A, store in L
+     * Input:
+        A: pointer to the input sparse matrix
+        L: pointer to the output sparse matrix (lower triangular part)
+        Output:
+        Returns 1 on success, 0 on failure (null pointers or dimension mismatch)
+     * 
+     */
     if (!A || !L || A->m != A->n) return 0; // Only square matrices can be processed
     int n = A->m;
     if (!CreateSpMat(L, n, n)) return 0;
@@ -721,6 +554,15 @@ int mat_lower_tri(SpMat* A, SpMat* L){
 }
 
 int mat_diag(SpMat* A, SpMat* D) {
+    /**
+     * @brief   Extract the diagonal part of a sparse matrix A, store in D
+     * Input:
+        A: pointer to the input sparse matrix
+        D: pointer to the output sparse matrix (diagonal part)
+        Output:
+        Returns 1 on success, 0 on failure (null pointers or dimension mismatch)
+     * 
+     */
     if (!A || !D || A->m != A->n) return 0; // Only square matrices can have a diagonal matrix
     int n = A->m;
     if (!CreateSpMat(D, n, n)) return 0;
@@ -736,6 +578,17 @@ int mat_diag(SpMat* A, SpMat* D) {
 // Allocates *row_start (size n+1), *row_idx (size nnz), *row_val (size nnz).
 // Caller must free() row_start, row_idx, row_val.
 static int precompute_row_index(SpMat* A, int** row_start_out, int** row_idx_out, double** row_val_out) {
+    /**
+     * @brief   Precompute row offsets and index/value arrays for fast per-row access.
+     * Input:
+        A: pointer to the input sparse matrix
+        row_start_out: pointer to store the row start offsets array (size n+1)
+        row_idx_out: pointer to store the column indices array (size nnz)
+        row_val_out: pointer to store the values array (size nnz)
+        Output:
+        Returns 1 on success, 0 on failure (null pointers or memory allocation failure)
+     * 
+     */
     if (!A || !row_start_out || !row_idx_out || !row_val_out) return 0;
     int n = A->m;
     int nnz = A->tu;
@@ -787,6 +640,15 @@ static int precompute_row_index(SpMat* A, int** row_start_out, int** row_idx_out
 
 // Comparator for qsort: sort by row then column (1-based stored in elem)
 static int cmp_triple_rowcol(const void* a, const void* b) {
+    /**
+     * @brief   Comparator for qsort: sort by row then column (1-based stored in elem)
+     * Input:
+        a: pointer to the first triple
+        b: pointer to the second triple
+        Output:
+        Returns -1 if a < b, 1 if a > b, 0 if equal
+     * 
+     */
     const triple* A = (const triple*)a;
     const triple* B = (const triple*)b;
     if (A->i < B->i) return -1;
@@ -801,6 +663,18 @@ static int cmp_triple_rowcol(const void* a, const void* b) {
    sequentially (single pass over all nonzeros produces all row updates).
    This avoids per-row index arrays while keeping in-place GS semantics. */
 int Gauss_Seidel(SpMat* A, double* b, double* x, int max_iter, double tol) {
+    /**
+     * @brief   Gauss-Seidel method for solving Ax = b
+     * Input:
+        A: pointer to the sparse matrix (should be square)
+        b: right-hand side vector
+        x: initial guess vector (will be updated with the solution)
+        max_iter: maximum number of iterations
+        tol: tolerance for convergence
+        Output:
+        Returns 1 on success, 0 on failure (invalid inputs)
+     * 
+     */
     if (!A || !b || !x || A->m != A->n) return 0;
     if (A->tu <= 0) return 0;
     int n = A->m;
@@ -860,6 +734,18 @@ int Gauss_Seidel(SpMat* A, double* b, double* x, int max_iter, double tol) {
 
 // Jacobi method for solving Ax = b
 int Jacobi(SpMat* A, double* b, double* x, int max_iter, double tol) {
+    /**
+     * @brief   Jacobi method for solving Ax = b
+     * Input:
+        A: pointer to the sparse matrix (should be square)
+        b: right-hand side vector
+        x: initial guess vector (will be updated with the solution)
+        max_iter: maximum number of iterations
+        tol: tolerance for convergence
+        Output:
+        Returns 1 on success, 0 on failure (invalid inputs)
+     * 
+     */
     if (!A || !b || !x || A->m != A->n) return 0;
     int n = A->m;
 
@@ -932,3 +818,32 @@ int Jacobi(SpMat* A, double* b, double* x, int max_iter, double tol) {
     return 1;
 }
 
+
+int mat_mul_vec(SpMat* A, double* x, double* y) {
+    /**
+     * @brief   Multiply sparse matrix A with vector x, store result in y (y = A * x)
+     * Input:
+        A: pointer to the sparse matrix
+        x: input vector
+        y: output vector (should be pre-allocated with size A->m)
+        Output:
+        Returns 1 on success, 0 on failure (invalid inputs)
+     * 
+     */
+    if (!A || !x || !y) return 0;
+    int m = A->m;
+    int n = A->n;
+
+    // Initialize result vector y to zero
+    for (int i = 0; i < m; i++) y[i] = 0.0;
+
+    // Perform multiplication
+    for (int k = 0; k < A->tu; k++) {
+        int row = A->elem[k].i - 1; // Convert to 0-based index
+        int col = A->elem[k].j - 1; // Convert to 0-based index
+        if (row >= 0 && row < m && col >= 0 && col < n) {
+            y[row] += A->elem[k].data * x[col];
+        }
+    }
+    return 1;
+}

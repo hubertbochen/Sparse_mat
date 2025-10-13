@@ -1,7 +1,7 @@
 2D Poisson solver on L-shaped domain using FIM and sparse matrix
 C++17, OpenMP 16 threads
 Assemble laplacian matrix and solve using Gauss-Seidel iteration
-Exact solution: u = exp(x*y/4) + y, Laplacian = (x^2 + y^2)*exp(x*y/4)/16
+Exact solution: u = exp(x*y-x) + y, Laplacian = (x^2 + (y-1)^2)*exp(x*y-x)
 Domain: L-shape with vertices (0,-2),(0,2),(2,2),(2,1),(1,1),(1,-2)
 Mesh: uniform grid with nx by ny points, spacing hx, hy
 Boundary condition: Dirichlet u=0 on outer boundary
@@ -13,6 +13,6 @@ Laplacian matrix built with 111781 elements
 Solving with Gauss-Seidel: n=22817, max_iter=100000, tol=1e-10
 Gauss-Seidel converged in 31194 iterations
 Gauss-Seidel finished, residual norm = 8.188605e-07
-Calculation time: 14.002000 seconds
+Calculation time: 15.410000 seconds
 Error: max = 2.641860e-05, L2 = 8.987796e-06
 Solution saved to results/solution.txt

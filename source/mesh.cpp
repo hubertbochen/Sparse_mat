@@ -41,6 +41,15 @@ void Mesh2D::init(int nx_, int ny_, double xlim_, double ylim_) {
 
 // build_list
 void Mesh2D::build_list(Mesh2D* mesh) {
+    /**
+     * @brief Build the list of non-zero elements for the sparse matrix representation.
+     * Input:
+        mesh: pointer to the Mesh2D object containing pt_type and dimensions
+        Output:
+        Allocates and fills xlist, ylist, linlist, and sets allocated_size
+        Returns nothing
+     * 
+     */
     // free previous
     delete[] xlist;
     delete[] ylist;
@@ -82,6 +91,15 @@ void Mesh2D::build_list(Mesh2D* mesh) {
 
 // build_stiff
 void Mesh2D::build_stiff(Mesh2D* mesh) {
+    /**
+     * @brief Build the sparse Laplacian matrix using a 5-point stencil.
+     * Input:
+        mesh: pointer to the Mesh2D object containing pt_type and dimensions
+        Output:
+        Fills the stiff SpMat with the Laplacian matrix entries
+        Returns nothing
+     * 
+     */
     if (!CreateSpMat(&stiff, allocated_size, allocated_size)) {
         std::fprintf(stderr, "Error: CreateSpMat failed\n");
         return;

@@ -1,3 +1,10 @@
+/**
+ * @file Spmat.h
+ * @author Chen Bojin
+ * @brief Header file for sparse matrix operations
+ * @version 0.1
+ * @date 2025-10-13
+ */
 
 #ifndef SPMAT_H
 #define SPMAT_H
@@ -11,16 +18,18 @@ extern "C" {
 #define MaxNum 1000000
 
 typedef struct triple {
-    int i;
-    int j;
-    double data;
+    /**< triple structure for sparse matrix element */
+    int i;/**< row index */
+    int j;/**< column index */
+    double data;/**< non-zero value */
 } triple, *MatHead;
 
 typedef struct SpMat {
-    triple* elem; // dynamically allocated array of triples
-    int m;
-    int n;
-    int tu;
+    /**< sparse matrix structure */
+    triple* elem; /**< dynamically allocated array of triples */
+    int m;/**< number of rows */
+    int n;/**< number of columns */
+    int tu;/**< number of non-zero elements */
 } SpMat;
 
 int CreateSpMat(SpMat* M, int m, int n);
